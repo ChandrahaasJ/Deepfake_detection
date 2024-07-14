@@ -17,6 +17,7 @@ from tensorflow.keras import layers
 from tensorflow.keras.applications import EfficientNetB0
 import tensorflow as tf
 from tqdm import tqdm
+from controller.controlFunctions import extractaudio,extractframes,cleardir
 
 app = Flask(__name__)
 
@@ -75,43 +76,57 @@ def hello():
 # class_labels = ['fake', 'real']
 
 
-
-
-
-@app.route('/videosplitter', methods=['POST'])
-def videosplitter():
+@app.route('/audio/extractor',methods=['POST'])
+def aud():
     if 'video' not in request.files:
-        return jsonify({'error': 'No video part in the request'}), 400
-    file = request.files['video']
-    if file.filename == '':
-        return jsonify({'error': 'No selected video file'}), 400
+        return jsonify({'error':"No video was sent"}),400
+    file=request.files['video']
+    if file=='':
+        return jsonify({'error':"no file present"}),400
     if file and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
+        filename=secure_filename(file.filename)
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        cleardir('D:/Projects/Deepfake_detection/Server/uploads')
         file.save(file_path)
-
-        output_video_path = process_video_dl(file_path)
-
-        return send_file(output_video_path, as_attachment=True)
-
-    return jsonify({'error': 'File type not allowed'}), 400
+        audiopath=extractaudio(file_path)
+        return jsonify({"audio-path":audiopath})
 
 
-@app.route('/magic/endpoint',methods=['GET','POST'])
-def magicep():
-    if request.method=='POST':
-        image_data = request.files['image']
 
-        # Convert binary data to PIL Image
-        image = Image.open(image_data).resize((224, 224))
+# @app.route('/videosplitter', methods=['POST'])
+# def videosplitter():
+#     if 'video' not in request.files:
+#         return jsonify({'error': 'No video part in the request'}), 400
+#     file = request.files['video']
+#     if file.filename == '':
+#         return jsonify({'error': 'No selected video file'}), 400
+#     if file and allowed_file(file.filename):
+#         filename = secure_filename(file.filename)
+#         file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+#         file.save(file_path)
 
-        path = "Efficient_Net_Final.weights.h5"
+#         output_video_path = process_video_dl(file_path)
 
-        NUM_CLASSES = 3
+#         return send_file(output_video_path, as_attachment=True)
 
-        model = build_model(num_classes=NUM_CLASSES)
+#     return jsonify({'error': 'File type not allowed'}), 400
 
-        model.load_weights(path)
+
+# @app.route('/magic/endpoint',methods=['GET','POST'])
+# def magicep():
+#     if request.method=='POST':
+#         image_data = request.files['image']
+
+#         # Convert binary data to PIL Image
+#         image = Image.open(image_data).resize((224, 224))
+
+#         path = "Efficient_Net_Final.weights.h5"
+
+#         NUM_CLASSES = 3
+
+#         model = build_model(num_classes=NUM_CLASSES)
+
+#         model.load_weights(path)
 
 if __name__=='__main__':
     app.run("0.0.0.0",debug=True)

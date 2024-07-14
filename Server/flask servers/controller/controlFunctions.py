@@ -12,8 +12,10 @@ def cleardir(path):
 def extractaudio(path):
     video=moviepy.editor.VideoFileClip(path)
     audio=video.audio
-    audio.write_audiofile("extracted_audio.mp3")
-    return "Uploaded successfully"
+    cleardir("D:/Projects/Deepfake_detection/extracted audios")
+    save_path="D:/Projects/Deepfake_detection/extracted audios/extracted_audio.wav"
+    audio.write_audiofile(save_path)
+    save_path
 
 def extractframes(path):
     savedir="D:/Projects/Deepfake_detection/flask servers/controller/savedframes"
@@ -35,7 +37,6 @@ def extractframes(path):
 
             frame_count+=1
 
-def insta(path):
 
 # def process_video_dl(video_path):
 #     cap = cv2.VideoCapture(video_path)
